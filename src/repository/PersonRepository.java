@@ -34,18 +34,10 @@ public class PersonRepository {
     }
 
     public void delete(long id) throws SQLException {
-        Connection conn = DatabaseConnection.getConnection();
-
-        // Delete from persons table first
-        String personSql = "DELETE FROM persons WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(personSql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
-        }
-
-        // Delete from users table
-        String userSql = "DELETE FROM users WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(userSql)) {
+        // Just delete from users - persons will auto-delete
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         }
@@ -104,5 +96,33 @@ public class PersonRepository {
             }
         }
         return persons;
+    }
+
+    public Person findByUsername(String username) throws SQLException {
+        String sql = "SELECT u.*, p.nume, p.prenume, p.data_nasterii, p.ocupatie, p.nivel_empatie " +
+                "FROM users u JOIN persons p ON u.id = p.id " +
+                "WHERE u.username = ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setString(1, username);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return new Person(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getString("nume"),
+                        rs.getString("prenume"),
+                        rs.getString("data_nasterii"),
+                        rs.getString("ocupatie"),
+                        rs.getLong("nivel_empatie")
+                );
+            }
+            return null;
+        }
     }
 }

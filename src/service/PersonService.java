@@ -17,6 +17,13 @@ public class PersonService {
 
     public void addPerson(Person person) {
         try {
+            // Check if username already exists
+            Person existing = personRepository.findByUsername(person.getUsername());
+            if (existing != null) {
+                System.err.println("Error: Username '" + person.getUsername() + "' already exists");
+                return;
+            }
+
             personRepository.save(person);
             System.out.println("Person added successfully!");
         } catch (SQLException e) {

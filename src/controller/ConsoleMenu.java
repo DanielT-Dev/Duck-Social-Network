@@ -1,10 +1,15 @@
 package controller;
 
 import domain.*;
+import repository.FriendshipRepository;
 import repository.MemoryRepository;
+import service.CardService;
 import service.DuckService;
+import service.FriendshipService;
 import service.PersonService;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Scanner;
@@ -16,6 +21,8 @@ public class ConsoleMenu {
     private final MemoryRepository memoryRepository = new MemoryRepository();
     private final DuckService duckService = new DuckService(memoryRepository);
     private final PersonService personService = new PersonService(memoryRepository);
+    private final FriendshipService friendshipService = new FriendshipService(memoryRepository);
+    private final CardService cardService = new CardService(memoryRepository);
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -152,7 +159,6 @@ public class ConsoleMenu {
         this.duckService.addDuck(duck);
         System.out.println("DUCK CREATED!");
     }
-
     private void createPerson() {
         System.out.println("CREATE PERSON:");
 
@@ -245,12 +251,82 @@ public class ConsoleMenu {
         this.personService.addPerson(person);
         System.out.println("PERSON CREATED!");
     }
-
     private void createFriendship() {
         System.out.println("CREATE FRIENDSHIP:");
+
+        long user1Id = 0;
+        long user2Id = 0;
+
+        // Validate first ID
+        while (true) {
+            System.out.print("First User ID: ");
+            user1Id = scanner.nextLong();
+            scanner.nextLine();
+            if (user1Id > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Validate second ID
+        while (true) {
+            System.out.print("Second User ID: ");
+            user2Id = scanner.nextLong();
+            scanner.nextLine();
+            if (user2Id > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Call service
+        this.friendshipService.addFriendship(user1Id, user2Id);
     }
     private void createCard() {
         System.out.println("CREATE CARD:");
+
+        long cardId = 0;
+        String numeCard = "";
+        List<Duck> membri = new ArrayList<>();
+
+        // Validate card ID
+        while (true) {
+            System.out.print("Card ID (positive number): ");
+            cardId = scanner.nextLong();
+            scanner.nextLine();
+            if (cardId > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Validate card name
+        while (true) {
+            System.out.print("Card Name: ");
+            numeCard = scanner.nextLine();
+            if (!numeCard.trim().isEmpty()) break;
+            System.err.println("Error: Card name cannot be empty");
+        }
+
+        // Add ducks to card
+        while (true) {
+            System.out.print("Add duck to card? (yes/no): ");
+            String response = scanner.nextLine().toLowerCase();
+
+            if (response.equals("no") || response.equals("n")) {
+                break;
+            } else if (response.equals("yes") || response.equals("y")) {
+                System.out.print("Enter Duck ID: ");
+                long duckId = scanner.nextLong();
+                scanner.nextLine();
+
+                Duck duck = duckService.getDuck(duckId);
+                if (duck != null) {
+                    membri.add(duck);
+                    System.out.println("Duck added to card!");
+                } else {
+                    System.err.println("Error: Duck not found with ID " + duckId);
+                }
+            }
+        }
+
+        Card card = new Card(cardId, numeCard, membri);
+        this.cardService.addCard(card);
+        System.out.println("CARD CREATED!");
     }
     private void createEvent() {
         System.out.println("CREATE EVENT:");
@@ -293,9 +369,54 @@ public class ConsoleMenu {
     }
     private void deleteFriendship() {
         System.out.println("DELETE FRIENDSHIP:");
+
+        long user1Id = 0;
+        long user2Id = 0;
+
+        // Validate first ID
+        while (true) {
+            System.out.print("First User ID: ");
+            user1Id = scanner.nextLong();
+            scanner.nextLine();
+            if (user1Id > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Validate second ID
+        while (true) {
+            System.out.print("Second User ID: ");
+            user2Id = scanner.nextLong();
+            scanner.nextLine();
+            if (user2Id > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Call service
+        this.friendshipService.removeFriendship(user1Id, user2Id);
     }
     private void deleteCard() {
         System.out.println("DELETE CARD:");
+
+        long cardId = 0;
+
+        // Validate card ID
+        while (true) {
+            System.out.print("Card ID to delete: ");
+            cardId = scanner.nextLong();
+            scanner.nextLine();
+            if (cardId > 0) break;
+            System.err.println("Error: ID must be positive");
+        }
+
+        // Ask for confirmation
+        System.out.print("Are you sure you want to delete card " + cardId + "? (yes/no): ");
+        String confirm = scanner.nextLine().toLowerCase();
+
+        if (confirm.equals("yes") || confirm.equals("y")) {
+            this.cardService.removeCard(cardId);
+        } else {
+            System.out.println("Deletion cancelled.");
+        }
     }
     private void deleteEvent() {
         System.out.println("DELETE EVENT:");
@@ -320,9 +441,20 @@ public class ConsoleMenu {
     }
     private void printFriendships() {
         System.out.println("PRINT FRIENDSHIPS:");
+
+        List<Friendship> friendships =  friendshipService.getFriendships();
+
+        for (Friendship friendship : friendships) {
+            System.out.println(friendship);
+        }
     }
     private void printCards() {
         System.out.println("PRINT CARDS:");
+
+        List<Card> cards = cardService.getAllCards();
+        for (Card card : cards) {
+            System.out.println(card);
+        }
     }
     private void printEvents() {
         System.out.println("PRINT EVENTS:");

@@ -36,4 +36,13 @@ public class Card {
         }
         return total / membri.size();
     }
+
+    @Override
+    public String toString() {
+        return "Card [id=" + id +
+                ", numeCard=" + numeCard +
+                ", numarMembri=" + (membri != null ? membri.size() : 0) +
+                ", performantaMedie=" + String.format("%.2f", getPerformantaMedie()) +
+                "]";
+    }
 }

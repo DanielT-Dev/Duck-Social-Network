@@ -16,4 +16,9 @@ public class Friendship {
     public long getUser2Id() {
         return user2Id;
     }
+
+    @Override
+    public String toString() {
+        return "user1-id: " + user1Id + ", user2-id: " + user2Id;
+    }
 }

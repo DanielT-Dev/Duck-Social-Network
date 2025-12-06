@@ -33,18 +33,10 @@ public class DuckRepository {
     }
 
     public void delete(long id) throws SQLException {
-        Connection conn = DatabaseConnection.getConnection();
-
-        // Delete from ducks table first (foreign key)
-        String duckSql = "DELETE FROM ducks WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(duckSql)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
-        }
-
-        // Delete from users table
-        String userSql = "DELETE FROM users WHERE id = ?";
-        try (PreparedStatement stmt = conn.prepareStatement(userSql)) {
+        // Just delete from users - ducks will auto-delete
+        String sql = "DELETE FROM users WHERE id = ?";
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, id);
             stmt.executeUpdate();
         }
