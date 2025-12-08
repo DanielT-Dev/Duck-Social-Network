@@ -8,17 +8,17 @@ import java.util.List;
 
 public class FriendshipRepository {
     public void save(Friendship friendship) throws SQLException {
-        String sql = "INSERT INTO friendships (user1_id, user2_id) VALUES (?, ?)";
+        String sql = "INSERT INTO friendships (user1_id, user2_id, created_at) VALUES (?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
              PreparedStatement stmt = conn.prepareStatement(sql)) {
 
-            // Store with smaller ID first to avoid duplicates like (1,2) and (2,1)
             long user1 = Math.min(friendship.getUser1Id(), friendship.getUser2Id());
             long user2 = Math.max(friendship.getUser1Id(), friendship.getUser2Id());
 
             stmt.setLong(1, user1);
             stmt.setLong(2, user2);
+            stmt.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
             stmt.executeUpdate();
         }
     }
@@ -94,5 +94,43 @@ public class FriendshipRepository {
             }
         }
         return friends;
+    }
+
+    public List<Friendship> findAllPaginated(int offset, int limit) throws SQLException {
+        List<Friendship> friendships = new ArrayList<>();
+
+        // Remove ORDER BY created_at or change to ORDER BY user1_id
+        String sql = "SELECT user1_id, user2_id FROM friendships ORDER BY user1_id, user2_id LIMIT ? OFFSET ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Friendship friendship = new Friendship(
+                        rs.getLong("user1_id"),
+                        rs.getLong("user2_id")
+                );
+                friendships.add(friendship);
+            }
+        }
+        return friendships;
+    }
+
+    public int getTotalCount() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM friendships";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        }
     }
 }

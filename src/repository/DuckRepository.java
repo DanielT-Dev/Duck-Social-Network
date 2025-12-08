@@ -92,4 +92,50 @@ public class DuckRepository {
         }
         return ducks;
     }
+
+    public List<Duck> findAllPaginated(int offset, int limit) throws SQLException {
+        List<Duck> ducks = new ArrayList<>();
+
+        String sql = "SELECT u.*, d.tip, d.viteza, d.rezistenta " +
+                "FROM users u " +
+                "JOIN ducks d ON u.id = d.id " +
+                "ORDER BY u.id " +
+                "LIMIT ? OFFSET ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Duck duck = new Duck(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        TipRata.valueOf(rs.getString("tip")),
+                        rs.getDouble("viteza"),
+                        rs.getDouble("rezistenta")
+                );
+                ducks.add(duck);
+            }
+        }
+        return ducks;
+    }
+
+    public int getTotalCount() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM ducks";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        }
+    }
 }

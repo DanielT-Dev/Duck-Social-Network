@@ -125,4 +125,52 @@ public class PersonRepository {
             return null;
         }
     }
+
+    public List<Person> findAllPaginated(int offset, int limit) throws SQLException {
+        List<Person> persons = new ArrayList<>();
+
+        String sql = "SELECT u.*, p.nume, p.prenume, p.data_nasterii, p.ocupatie, p.nivel_empatie " +
+                "FROM users u " +
+                "JOIN persons p ON u.id = p.id " +
+                "ORDER BY u.id " +
+                "LIMIT ? OFFSET ?";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setInt(1, limit);
+            stmt.setInt(2, offset);
+            ResultSet rs = stmt.executeQuery();
+
+            while (rs.next()) {
+                Person person = new Person(
+                        rs.getLong("id"),
+                        rs.getString("username"),
+                        rs.getString("email"),
+                        rs.getString("password"),
+                        rs.getString("nume"),
+                        rs.getString("prenume"),
+                        rs.getString("data_nasterii"),
+                        rs.getString("ocupatie"),
+                        rs.getLong("nivel_empatie")
+                );
+                persons.add(person);
+            }
+        }
+        return persons;
+    }
+
+    public int getTotalCount() throws SQLException {
+        String sql = "SELECT COUNT(*) as total FROM persons";
+
+        try (Connection conn = DatabaseConnection.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            if (rs.next()) {
+                return rs.getInt("total");
+            }
+            return 0;
+        }
+    }
 }

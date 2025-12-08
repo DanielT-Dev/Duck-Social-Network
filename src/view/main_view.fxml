@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+
+<BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.MainController">
+
+    <center>
+        <TabPane fx:id="tabPane">
+            <Tab text="Ducks">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="duckTable">
+                            <columns>
+                                <TableColumn text="ID" fx:id="duckIdColumn"/>
+                                <TableColumn text="Username" fx:id="duckUsernameColumn"/>
+                                <TableColumn text="Email" fx:id="duckEmailColumn"/>
+                                <TableColumn text="Type" fx:id="duckTypeColumn"/>
+                                <TableColumn text="Speed" fx:id="duckSpeedColumn"/>
+                                <TableColumn text="Resistance" fx:id="duckResistanceColumn"/>
+                            </columns>
+                        </TableView>
+                    </center>
+                    <bottom>
+                        <HBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Previous" fx:id="duckPrevButton" onAction="#handleDuckPrevious"/>
+                            <Label fx:id="duckPageLabel" text="Page 1"/>
+                            <Button text="Next" fx:id="duckNextButton" onAction="#handleDuckNext"/>
+                        </HBox>
+                    </bottom>
+                </BorderPane>
+            </Tab>
+
+            <Tab text="Persons">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="personTable">
+                            <columns>
+                                <TableColumn text="ID" fx:id="personIdColumn"/>
+                                <TableColumn text="Username" fx:id="personUsernameColumn"/>
+                                <TableColumn text="Email" fx:id="personEmailColumn"/>
+                                <TableColumn text="First Name" fx:id="personFirstNameColumn"/>
+                                <TableColumn text="Last Name" fx:id="personLastNameColumn"/>
+                                <TableColumn text="Occupation" fx:id="personOccupationColumn"/>
+                                <TableColumn text="Empathy Level" fx:id="personEmpathyColumn"/>
+                            </columns>
+                        </TableView>
+                    </center>
+                    <bottom>
+                        <HBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Previous" fx:id="personPrevButton" onAction="#handlePersonPrevious"/>
+                            <Label fx:id="personPageLabel" text="Page 1"/>
+                            <Button text="Next" fx:id="personNextButton" onAction="#handlePersonNext"/>
+                        </HBox>
+                    </bottom>
+                </BorderPane>
+            </Tab>
+
+            <Tab text="Friendships">
+                <BorderPane>
+                    <center>
+                        <TableView fx:id="friendshipTable">
+                            <columns>
+                                <TableColumn text="User 1 ID" fx:id="friendshipUser1Column"/>
+                                <TableColumn text="User 2 ID" fx:id="friendshipUser2Column"/>
+                                <TableColumn text="Created At" fx:id="friendshipCreatedAtColumn"/>
+                            </columns>
+                        </TableView>
+                    </center>
+                    <bottom>
+                        <HBox alignment="CENTER" spacing="20">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Previous" fx:id="friendshipPrevButton" onAction="#handleFriendshipPrevious"/>
+                            <Label fx:id="friendshipPageLabel" text="Page 1"/>
+                            <Button text="Next" fx:id="friendshipNextButton" onAction="#handleFriendshipNext"/>
+                        </HBox>
+                    </bottom>
+                </BorderPane>
+            </Tab>
+        </TabPane>
+    </center>
+
+</BorderPane>

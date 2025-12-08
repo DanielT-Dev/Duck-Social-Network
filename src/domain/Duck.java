@@ -1,5 +1,7 @@
 package domain;
 
+import javafx.beans.property.*;
+
 public class Duck extends User {
     private final TipRata tip;
     private final double viteza;
@@ -26,5 +28,30 @@ public class Duck extends User {
     @Override
     public String toString() {
         return super.toString() + " TipRata: " + tip + ", viteza: " + viteza + ", rezistenta: " + rezistenta;
+    }
+
+    // Property getters for JavaFX
+    public LongProperty idProperty() {
+        return new SimpleLongProperty(getId());
+    }
+
+    public StringProperty usernameProperty() {
+        return new SimpleStringProperty(getUsername());
+    }
+
+    public StringProperty emailProperty() {
+        return new SimpleStringProperty(getEmail());
+    }
+
+    public ObjectProperty<TipRata> tipProperty() {
+        return new SimpleObjectProperty<>(tip);
+    }
+
+    public DoubleProperty vitezaProperty() {
+        return new SimpleDoubleProperty(viteza);
+    }
+
+    public DoubleProperty rezistentaProperty() {
+        return new SimpleDoubleProperty(rezistenta);
     }
 }
