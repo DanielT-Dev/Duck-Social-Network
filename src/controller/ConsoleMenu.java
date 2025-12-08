@@ -3,10 +3,7 @@ package controller;
 import domain.*;
 import repository.FriendshipRepository;
 import repository.MemoryRepository;
-import service.CardService;
-import service.DuckService;
-import service.FriendshipService;
-import service.PersonService;
+import service.*;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -23,6 +20,7 @@ public class ConsoleMenu {
     private final PersonService personService = new PersonService(memoryRepository);
     private final FriendshipService friendshipService = new FriendshipService(memoryRepository);
     private final CardService cardService = new CardService(memoryRepository);
+    private final EventService eventService = new EventService();
 
     private final Scanner scanner = new Scanner(System.in);
 
@@ -45,6 +43,7 @@ public class ConsoleMenu {
         System.out.println("13. PRINT Friendships");
         System.out.println("14. PRINT Cards");
         System.out.println("15. PRINT Events");
+        System.out.println("16. SUBSCRIBE to an event");
     }
 
     public void start() {
@@ -74,6 +73,7 @@ public class ConsoleMenu {
                     case 13: this.printFriendships(); break;
                     case 14: this.printCards(); break;
                     case 15: this.printEvents(); break;
+                    case 16: this.subscribeToEvent(); break;
 
                     default:
                         System.out.println("Invalid option.");
@@ -330,6 +330,43 @@ public class ConsoleMenu {
     }
     private void createEvent() {
         System.out.println("CREATE EVENT:");
+
+        String name = "";
+        String description = "";
+
+        // Clear the scanner buffer first
+        scanner.nextLine();
+
+        // Validate name
+        while (true) {
+            System.out.print("EVENT NAME: ");
+            name = scanner.nextLine().trim();
+            if (!name.isEmpty()) {
+                if (name.length() <= 255) {
+                    break;
+                }
+                System.out.println("Error: Name must be 255 characters or less");
+            } else {
+                System.out.println("Error: Event name cannot be empty");
+            }
+        }
+
+        // Get description
+        System.out.print("DESCRIPTION (press Enter to skip): ");
+        description = scanner.nextLine().trim();
+        if (description.length() > 1000) {
+            System.out.println("Warning: Description truncated to 1000 characters");
+            description = description.substring(0, 1000);
+        }
+
+        try {
+            Event event = this.eventService.createEvent(name, description);
+            System.out.println("EVENT CREATED SUCCESSFULLY! ID: " + event.getId());
+        } catch (SQLException e) {
+            System.out.println("Database error creating event: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error creating event: " + e.getMessage());
+        }
     }
     private void deleteDuck() {
         System.out.println("DELETE DUCK:");
@@ -420,6 +457,54 @@ public class ConsoleMenu {
     }
     private void deleteEvent() {
         System.out.println("DELETE EVENT:");
+
+        long eventId = 0;
+
+        // Validate event ID
+        while (true) {
+            System.out.print("ENTER EVENT ID: ");
+            if (scanner.hasNextLong()) {
+                eventId = scanner.nextLong();
+                scanner.nextLine(); // Consume newline
+
+                // Check if event exists
+                try {
+                    Event event = eventService.getEventById(eventId);
+                    if (event != null) {
+                        System.out.println("Event found: " + event.getName());
+                        System.out.println("Description: " + event.getDescription());
+                        System.out.println("Subscribers: " + event.getSubscriberCount());
+
+                        // Confirm deletion
+                        System.out.print("Are you sure you want to delete this event? (y/n): ");
+                        String confirm = scanner.nextLine().trim().toLowerCase();
+
+                        if (confirm.equals("y") || confirm.equals("yes")) {
+                            // Optional: Notify subscribers before deletion
+                            System.out.print("Send notification to subscribers before deletion? (y/n): ");
+                            String notify = scanner.nextLine().trim().toLowerCase();
+
+                            if (notify.equals("y") || notify.equals("yes")) {
+                                event.notifySubscribers("This event has been cancelled and will be removed");
+                            }
+
+                            eventService.deleteEvent(eventId);
+                            System.out.println("EVENT DELETED SUCCESSFULLY!");
+                        } else {
+                            System.out.println("Deletion cancelled.");
+                        }
+                        break;
+                    } else {
+                        System.err.println("Error: No event found with ID " + eventId);
+                    }
+                } catch (SQLException e) {
+                    System.err.println("Error checking event: " + e.getMessage());
+                }
+            } else {
+                scanner.nextLine(); // Clear invalid input
+                System.err.println("Error: ID must be a number");
+            }
+        }
     }
     private void printDucks() {
         System.out.println("PRINT DUCKS:");
@@ -457,6 +542,72 @@ public class ConsoleMenu {
         }
     }
     private void printEvents() {
-        System.out.println("PRINT EVENTS:");
+        System.out.println("LIST ALL EVENTS:");
+
+        try {
+            List<Event> events = eventService.getAllEvents();
+
+            if (events.isEmpty()) {
+                System.out.println("No events found.");
+                return;
+            }
+
+            System.out.println("\n=== ALL EVENTS (" + events.size() + " total) ===");
+            for (int i = 0; i < events.size(); i++) {
+                Event event = events.get(i);
+                System.out.println("\n[" + (i + 1) + "] ID: " + event.getId());
+                System.out.println("    Name: " + event.getName());
+                System.out.println("    Description: " +
+                        (event.getDescription() != null && !event.getDescription().isEmpty() ?
+                                event.getDescription() : "(No description)"));
+                System.out.println("    Subscribers: " + event.getSubscriberCount());
+                System.out.println("    Created: " +
+                        (event.getCreatedAt() != null ? event.getCreatedAt() : "N/A"));
+                System.out.println("    Updated: " +
+                        (event.getUpdatedAt() != null ? event.getUpdatedAt() : "N/A"));
+            }
+        } catch (SQLException e) {
+            System.err.println("Error retrieving events: " + e.getMessage());
+        }
+    }
+    private void subscribeToEvent() {
+        System.out.println("SUBSCRIBE USER TO EVENT:");
+
+        try {
+            System.out.print("Enter Event ID: ");
+            long eventId = scanner.nextLong();
+            scanner.nextLine();
+
+            System.out.print("Enter User ID: ");
+            long userId = scanner.nextLong();
+            scanner.nextLine();
+
+            // Try to get the user as Person first, then as Duck
+            User user = null;
+
+            // Check if it's a Person
+            Person person = personService.getPerson(userId);
+            if (person != null) {
+                user = person;
+            } else {
+                // Check if it's a Duck
+                Duck duck = duckService.getDuck(userId);
+                if (duck != null) {
+                    user = duck;
+                }
+            }
+
+            if (user == null) {
+                System.out.println("Error: User not found with ID " + userId);
+                return;
+            }
+
+            // Subscribe using the event service
+            eventService.subscribeToEvent(eventId, user);
+            System.out.println(user.getClass().getSimpleName() + " " + user.getUsername() + " subscribed to event.");
+
+        } catch (Exception e) {
+            System.out.println("Error: " + e.getMessage());
+        }
     }
 }

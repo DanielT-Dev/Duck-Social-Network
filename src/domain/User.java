@@ -52,4 +52,9 @@ public abstract class User {
                 ", username: " + username +
                 ", email: " + email;
     }
+
+    public void update(Event event, String message) {
+        System.out.println("User " + username + " received notification from event '" +
+                event.getName() + "': " + message);
+    }
 }
