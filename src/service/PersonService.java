@@ -8,12 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PersonService {
-    private final MemoryRepository memoryRepository;
     private final PersonRepository personRepository =  new PersonRepository();
-
-    public PersonService(MemoryRepository memoryRepository) {
-        this.memoryRepository = memoryRepository;
-    }
 
     public void addPerson(Person person) {
         try {

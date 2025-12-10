@@ -10,12 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DuckService {
-    private final MemoryRepository memoryRepository;
     private final DuckRepository duckRepository = new DuckRepository();
 
-    public DuckService(MemoryRepository memoryRepository) {
-        this.memoryRepository = memoryRepository;
-    }
 
     public void addDuck(Duck duck) {
         try {

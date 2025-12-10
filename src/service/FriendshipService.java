@@ -8,11 +8,7 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class FriendshipService {
-    private final FriendshipRepository friendshipRepository;
-
-    public FriendshipService(MemoryRepository memoryRepository) {
-        this.friendshipRepository = new FriendshipRepository();
-    }
+    private final FriendshipRepository friendshipRepository = new FriendshipRepository();
 
     public void addFriendship(long user1Id, long user2Id) {
         if (user1Id == user2Id) {

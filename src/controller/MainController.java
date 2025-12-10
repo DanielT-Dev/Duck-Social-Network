@@ -3,6 +3,7 @@ package controller;
 import domain.Duck;
 import domain.Friendship;
 import domain.Person;
+import domain.TipRata;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -15,7 +16,16 @@ import repository.PersonRepository;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.BorderPane;
+import javafx.geometry.Insets;
+import javafx.scene.control.cell.PropertyValueFactory;
+import service.DuckService;
+import service.FriendshipService;
+import service.PersonService;
 
 public class MainController implements Initializable {
 
@@ -58,6 +68,9 @@ public class MainController implements Initializable {
     private DuckRepository duckRepository;
     private PersonRepository personRepository;
     private FriendshipRepository friendshipRepository;
+    private final DuckService duckService = new DuckService();
+    private final PersonService personService = new PersonService();
+    private final FriendshipService friendshipService = new FriendshipService();
 
     private int duckPage = 1;
     private int personPage = 1;
@@ -78,7 +91,6 @@ public class MainController implements Initializable {
         loadPersons();
         loadFriendships();
 
-        // Listen to tab changes to refresh data
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab.getText().equals("Ducks")) {
                 loadDucks();
@@ -220,5 +232,321 @@ public class MainController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    @FXML
+    private void createDuck() {
+        Dialog<Duck> dialog = new Dialog<>();
+        dialog.setTitle("Create Duck");
+        dialog.setHeaderText("Enter duck details:");
+
+        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField idField = new TextField();
+        idField.setPromptText("ID");
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+        TextField passwordField = new TextField();
+        passwordField.setPromptText("Password");
+        TextField typeField = new TextField();
+        typeField.setPromptText("Type (MALLARD, etc)");
+        TextField speedField = new TextField();
+        speedField.setPromptText("Speed");
+        TextField resistanceField = new TextField();
+        resistanceField.setPromptText("Resistance");
+
+        grid.add(new Label("ID:"), 0, 0);
+        grid.add(idField, 1, 0);
+        grid.add(new Label("Username:"), 0, 1);
+        grid.add(usernameField, 1, 1);
+        grid.add(new Label("Email:"), 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(new Label("Password:"), 0, 3);
+        grid.add(passwordField, 1, 3);
+        grid.add(new Label("Type:"), 0, 4);
+        grid.add(typeField, 1, 4);
+        grid.add(new Label("Speed:"), 0, 5);
+        grid.add(speedField, 1, 5);
+        grid.add(new Label("Resistance:"), 0, 6);
+        grid.add(resistanceField, 1, 6);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == createButtonType) {
+                try {
+                    long id = Long.parseLong(idField.getText());
+                    String username = usernameField.getText();
+                    String email = emailField.getText();
+                    String password = passwordField.getText();
+                    TipRata type = TipRata.valueOf(typeField.getText().toUpperCase());
+                    double speed = Double.parseDouble(speedField.getText());
+                    double resistance = Double.parseDouble(resistanceField.getText());
+
+                    return new Duck(id, username, email, password, type, speed, resistance);
+                } catch (Exception e) {
+                    showAlert("Input Error", "Invalid input: " + e.getMessage());
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<Duck> result = dialog.showAndWait();
+        result.ifPresent(duck -> {
+            try {
+                // Save duck to database
+                duckRepository.save(duck);
+                loadDucks();
+            } catch (SQLException e) {
+                showAlert("Database Error", "Failed to create duck: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void createPerson() {
+        Dialog<Person> dialog = new Dialog<>();
+        dialog.setTitle("Create Person");
+        dialog.setHeaderText("Enter person details:");
+
+        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField idField = new TextField();
+        idField.setPromptText("ID");
+        TextField usernameField = new TextField();
+        usernameField.setPromptText("Username");
+        TextField emailField = new TextField();
+        emailField.setPromptText("Email");
+        TextField passwordField = new TextField();
+        passwordField.setPromptText("Password");
+        TextField firstNameField = new TextField();
+        firstNameField.setPromptText("First Name");
+        TextField lastNameField = new TextField();
+        lastNameField.setPromptText("Last Name");
+        TextField birthDateField = new TextField();
+        birthDateField.setPromptText("Birth Date (YYYY-MM-DD)");
+        TextField occupationField = new TextField();
+        occupationField.setPromptText("Occupation");
+        TextField empathyField = new TextField();
+        empathyField.setPromptText("Empathy Level");
+
+        grid.add(new Label("ID:"), 0, 0);
+        grid.add(idField, 1, 0);
+        grid.add(new Label("Username:"), 0, 1);
+        grid.add(usernameField, 1, 1);
+        grid.add(new Label("Email:"), 0, 2);
+        grid.add(emailField, 1, 2);
+        grid.add(new Label("Password:"), 0, 3);
+        grid.add(passwordField, 1, 3);
+        grid.add(new Label("First Name:"), 0, 4);
+        grid.add(firstNameField, 1, 4);
+        grid.add(new Label("Last Name:"), 0, 5);
+        grid.add(lastNameField, 1, 5);
+        grid.add(new Label("Birth Date:"), 0, 6);
+        grid.add(birthDateField, 1, 6);
+        grid.add(new Label("Occupation:"), 0, 7);
+        grid.add(occupationField, 1, 7);
+        grid.add(new Label("Empathy:"), 0, 8);
+        grid.add(empathyField, 1, 8);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == createButtonType) {
+                try {
+                    long id = Long.parseLong(idField.getText());
+                    String username = usernameField.getText();
+                    String email = emailField.getText();
+                    String password = passwordField.getText();
+                    String firstName = firstNameField.getText();
+                    String lastName = lastNameField.getText();
+                    String birthDate = birthDateField.getText();
+                    String occupation = occupationField.getText();
+                    long empathy = Long.parseLong(empathyField.getText());
+
+                    return new Person(id, username, email, password, firstName, lastName, birthDate, occupation, empathy);
+                } catch (Exception e) {
+                    showAlert("Input Error", "Invalid input: " + e.getMessage());
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<Person> result = dialog.showAndWait();
+        result.ifPresent(person -> {
+            try {
+                personRepository.save(person);
+                loadPersons();
+            } catch (SQLException e) {
+                showAlert("Database Error", "Failed to create person: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void createFriendship() {
+        Dialog<Friendship> dialog = new Dialog<>();
+        dialog.setTitle("Create Friendship");
+        dialog.setHeaderText("Enter user IDs to create friendship:");
+
+        ButtonType createButtonType = new ButtonType("Create", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(createButtonType, ButtonType.CANCEL);
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new javafx.geometry.Insets(20, 150, 10, 10));
+
+        TextField user1Field = new TextField();
+        user1Field.setPromptText("User 1 ID");
+        TextField user2Field = new TextField();
+        user2Field.setPromptText("User 2 ID");
+
+        grid.add(new Label("User 1 ID:"), 0, 0);
+        grid.add(user1Field, 1, 0);
+        grid.add(new Label("User 2 ID:"), 0, 1);
+        grid.add(user2Field, 1, 1);
+
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == createButtonType) {
+                try {
+                    long user1Id = Long.parseLong(user1Field.getText());
+                    long user2Id = Long.parseLong(user2Field.getText());
+
+                    if (user1Id == user2Id) {
+                        showAlert("Input Error", "Users cannot be friends with themselves");
+                        return null;
+                    }
+
+                    return new Friendship(user1Id, user2Id);
+                } catch (Exception e) {
+                    showAlert("Input Error", "Invalid input: " + e.getMessage());
+                    return null;
+                }
+            }
+            return null;
+        });
+
+        Optional<Friendship> result = dialog.showAndWait();
+        result.ifPresent(friendship -> {
+            try {
+                friendshipRepository.save(friendship);
+                loadFriendships();
+            } catch (SQLException e) {
+                showAlert("Database Error", "Failed to create friendship: " + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    private void deleteSelectedDuck() {
+        Duck selected = duckTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a duck to delete");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setHeaderText("Delete Duck");
+        confirm.setContentText("Are you sure you want to delete duck: " + selected.getUsername() + "?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // Delete from database
+                // duckRepository.delete(selected.getId());
+                duckService.deleteDuck(selected.getId());
+                loadDucks();
+            } catch (Exception e) {
+                showAlert("Delete Error", "Failed to delete duck: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void deleteSelectedPerson() {
+        Person selected = personTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a person to delete");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setHeaderText("Delete Person");
+        confirm.setContentText("Are you sure you want to delete person: " + selected.getUsername() + "?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                // Delete from database
+                // personRepository.delete(selected.getId());
+                personService.deletePerson(selected.getId());
+                loadPersons();
+            } catch (Exception e) {
+                showAlert("Delete Error", "Failed to delete person: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void deleteSelectedFriendship() {
+        Friendship selected = friendshipTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("Selection Error", "Please select a friendship to delete");
+            return;
+        }
+
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Delete");
+        confirm.setHeaderText("Delete Friendship");
+        confirm.setContentText("Are you sure you want to delete friendship between users " +
+                selected.getUser1Id() + " and " + selected.getUser2Id() + "?");
+
+        Optional<ButtonType> result = confirm.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                //friendshipRepository.delete(selected.getUser1Id(), selected.getUser2Id());
+                friendshipService.removeFriendship(selected.getUser1Id(), selected.getUser2Id());
+                loadFriendships();
+            } catch (Exception e) {
+                showAlert("Delete Error", "Failed to delete friendship: " + e.getMessage());
+            }
+        }
+    }
+
+    @FXML
+    private void refreshCurrentTab() {
+        String currentTab = tabPane.getSelectionModel().getSelectedItem().getText();
+
+        if (currentTab.equals("Ducks")) {
+            duckPage = 1;
+            loadDucks();
+        } else if (currentTab.equals("Persons")) {
+            personPage = 1;
+            loadPersons();
+        } else if (currentTab.equals("Friendships")) {
+            friendshipPage = 1;
+            loadFriendships();
+        }
     }
 }

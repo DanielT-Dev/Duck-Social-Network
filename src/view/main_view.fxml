@@ -9,6 +9,16 @@
         <TabPane fx:id="tabPane">
             <Tab text="Ducks">
                 <BorderPane>
+                    <top>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Create Duck" onAction="#createDuck"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedDuck" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Refresh" onAction="#refreshCurrentTab"/>
+                        </HBox>
+                    </top>
                     <center>
                         <TableView fx:id="duckTable">
                             <columns>
@@ -36,6 +46,16 @@
 
             <Tab text="Persons">
                 <BorderPane>
+                    <top>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Create Person" onAction="#createPerson"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedPerson" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Refresh" onAction="#refreshCurrentTab"/>
+                        </HBox>
+                    </top>
                     <center>
                         <TableView fx:id="personTable">
                             <columns>
@@ -64,6 +84,16 @@
 
             <Tab text="Friendships">
                 <BorderPane>
+                    <top>
+                        <HBox spacing="10" alignment="CENTER_LEFT">
+                            <padding>
+                                <Insets top="10" bottom="10" left="10" right="10"/>
+                            </padding>
+                            <Button text="Create Friendship" onAction="#createFriendship"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedFriendship" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Refresh" onAction="#refreshCurrentTab"/>
+                        </HBox>
+                    </top>
                     <center>
                         <TableView fx:id="friendshipTable">
                             <columns>

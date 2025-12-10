@@ -16,9 +16,9 @@ public class ConsoleMenu {
     public static final ConsoleMenu INSTANCE = new ConsoleMenu();
 
     private final MemoryRepository memoryRepository = new MemoryRepository();
-    private final DuckService duckService = new DuckService(memoryRepository);
-    private final PersonService personService = new PersonService(memoryRepository);
-    private final FriendshipService friendshipService = new FriendshipService(memoryRepository);
+    private final DuckService duckService = new DuckService();
+    private final PersonService personService = new PersonService();
+    private final FriendshipService friendshipService = new FriendshipService();
     private final CardService cardService = new CardService(memoryRepository);
     private final EventService eventService = new EventService();
 
