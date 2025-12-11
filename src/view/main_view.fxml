@@ -5,8 +5,21 @@
 
 <BorderPane xmlns:fx="http://javafx.com/fxml" fx:controller="controller.MainController">
 
+    <!-- Top bar with Log In button -->
+    <top>
+        <HBox spacing="10" alignment="CENTER_LEFT">
+            <padding>
+                <Insets top="10" bottom="10" left="10" right="10"/>
+            </padding>
+            <Button text="Log In" onAction="#openLoginWindow"/>
+            <Label fx:id="loginStatusLabel" text="Not logged in"/>
+        </HBox>
+    </top>
+
     <center>
         <TabPane fx:id="tabPane">
+
+            <!-- Ducks tab -->
             <Tab text="Ducks">
                 <BorderPane>
                     <top>
@@ -15,7 +28,8 @@
                                 <Insets top="10" bottom="10" left="10" right="10"/>
                             </padding>
                             <Button text="Create Duck" onAction="#createDuck"/>
-                            <Button text="Delete Selected" onAction="#deleteSelectedDuck" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedDuck"
+                                    style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
                             <Button text="Refresh" onAction="#refreshCurrentTab"/>
                         </HBox>
                     </top>
@@ -44,6 +58,7 @@
                 </BorderPane>
             </Tab>
 
+            <!-- Persons tab -->
             <Tab text="Persons">
                 <BorderPane>
                     <top>
@@ -52,7 +67,8 @@
                                 <Insets top="10" bottom="10" left="10" right="10"/>
                             </padding>
                             <Button text="Create Person" onAction="#createPerson"/>
-                            <Button text="Delete Selected" onAction="#deleteSelectedPerson" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedPerson"
+                                    style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
                             <Button text="Refresh" onAction="#refreshCurrentTab"/>
                         </HBox>
                     </top>
@@ -82,6 +98,7 @@
                 </BorderPane>
             </Tab>
 
+            <!-- Friendships tab -->
             <Tab text="Friendships">
                 <BorderPane>
                     <top>
@@ -90,7 +107,8 @@
                                 <Insets top="10" bottom="10" left="10" right="10"/>
                             </padding>
                             <Button text="Create Friendship" onAction="#createFriendship"/>
-                            <Button text="Delete Selected" onAction="#deleteSelectedFriendship" style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
+                            <Button text="Delete Selected" onAction="#deleteSelectedFriendship"
+                                    style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
                             <Button text="Refresh" onAction="#refreshCurrentTab"/>
                         </HBox>
                     </top>
@@ -115,6 +133,25 @@
                     </bottom>
                 </BorderPane>
             </Tab>
+
+            <!-- Communities tab -->
+            <Tab text="Communities">
+                <VBox spacing="10">
+                    <padding>
+                        <Insets top="10" bottom="10" left="10" right="10"/>
+                    </padding>
+                    <Label fx:id="totalCommunitiesLabel" text="Total communities: 0"/>
+                    <Label fx:id="mostSocialCommunityLabel" text="Most social community: "/>
+                    <TableView fx:id="communityTable">
+                        <columns>
+                            <TableColumn fx:id="userIdColumn" text="ID"/>
+                            <TableColumn fx:id="userUsernameColumn" text="Username"/>
+                        </columns>
+                    </TableView>
+
+                </VBox>
+            </Tab>
+
         </TabPane>
     </center>
 

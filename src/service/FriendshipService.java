@@ -5,7 +5,7 @@ import repository.FriendshipRepository;
 import repository.MemoryRepository;
 
 import java.sql.SQLException;
-import java.util.List;
+import java.util.*;
 
 public class FriendshipService {
     private final FriendshipRepository friendshipRepository = new FriendshipRepository();
@@ -64,4 +64,71 @@ public class FriendshipService {
             return false;
         }
     }
+
+    private void dfs(Long u, Map<Long, Set<Long>> graph, Set<Long> visited) {
+        visited.add(u);
+        for (Long v : graph.getOrDefault(u, Set.of())) {
+            if (!visited.contains(v)) dfs(v, graph, visited);
+        }
+    }
+
+    public int getTotalCommunities() {
+        List<Friendship> all = getFriendships(); // already handles SQLException
+        Map<Long, Set<Long>> graph = new HashMap<>();
+        for (Friendship f : all) {
+            graph.computeIfAbsent(f.getUser1Id(), k -> new HashSet<>()).add(f.getUser2Id());
+            graph.computeIfAbsent(f.getUser2Id(), k -> new HashSet<>()).add(f.getUser1Id());
+        }
+
+        Set<Long> visited = new HashSet<>();
+        int count = 0;
+
+        for (Long user : graph.keySet()) {
+            if (!visited.contains(user)) {
+                dfs(user, graph, visited);
+                count++;
+            }
+        }
+        return count;
+    }
+
+    public List<Long> getMostSocialCommunityWithMembers() {
+        List<Friendship> all = getFriendships();
+        Map<Long, Set<Long>> graph = new HashMap<>();
+        for (Friendship f : all) {
+            graph.computeIfAbsent(f.getUser1Id(), k -> new HashSet<>()).add(f.getUser2Id());
+            graph.computeIfAbsent(f.getUser2Id(), k -> new HashSet<>()).add(f.getUser1Id());
+        }
+
+        Set<Long> visited = new HashSet<>();
+        List<Long> largest = new ArrayList<>();
+
+        for (Long user : graph.keySet()) {
+            if (!visited.contains(user)) {
+                List<Long> component = new ArrayList<>();
+                Queue<Long> queue = new LinkedList<>();
+                queue.add(user);
+                visited.add(user);
+
+                while (!queue.isEmpty()) {
+                    Long u = queue.poll();
+                    component.add(u);
+                    for (Long v : graph.get(u)) {
+                        if (!visited.contains(v)) {
+                            visited.add(v);
+                            queue.add(v);
+                        }
+                    }
+                }
+
+                if (component.size() > largest.size()) {
+                    largest = component;
+                }
+            }
+        }
+        return largest;
+    }
+
+
+
 }

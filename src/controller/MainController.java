@@ -1,9 +1,6 @@
 package controller;
 
-import domain.Duck;
-import domain.Friendship;
-import domain.Person;
-import domain.TipRata;
+import domain.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -19,13 +16,17 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.BorderPane;
 import javafx.geometry.Insets;
-import javafx.scene.control.cell.PropertyValueFactory;
 import service.DuckService;
 import service.FriendshipService;
+import service.LoginService;
 import service.PersonService;
+import javafx.stage.Stage;
+import javafx.scene.Scene;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.Button;
 
 public class MainController implements Initializable {
 
@@ -71,11 +72,23 @@ public class MainController implements Initializable {
     private final DuckService duckService = new DuckService();
     private final PersonService personService = new PersonService();
     private final FriendshipService friendshipService = new FriendshipService();
+    private final LoginService loginService = new LoginService(duckService, personService);
 
     private int duckPage = 1;
     private int personPage = 1;
     private int friendshipPage = 1;
     private final int pageSize = 6;
+
+    // Communities tab components
+    @FXML private Label totalCommunitiesLabel;
+    @FXML private Label mostSocialCommunityLabel;
+    @FXML private TableView<User> communityTable;
+    @FXML private TableColumn<User, Long> userIdColumn;
+    @FXML private TableColumn<User, String> userUsernameColumn;
+
+
+    @FXML
+    private Label loginStatusLabel;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -86,10 +99,12 @@ public class MainController implements Initializable {
         setupDuckTable();
         setupPersonTable();
         setupFriendshipTable();
+        setupCommunityTable();
 
         loadDucks();
         loadPersons();
         loadFriendships();
+        loadCommunities();
 
         tabPane.getSelectionModel().selectedItemProperty().addListener((obs, oldTab, newTab) -> {
             if (newTab.getText().equals("Ducks")) {
@@ -98,6 +113,8 @@ public class MainController implements Initializable {
                 loadPersons();
             } else if (newTab.getText().equals("Friendships")) {
                 loadFriendships();
+            } else if (newTab.getText().equals("Communities")) {
+                loadCommunities();
             }
         });
     }
@@ -126,6 +143,12 @@ public class MainController implements Initializable {
         friendshipUser2Column.setCellValueFactory(new PropertyValueFactory<>("user2Id"));
         friendshipCreatedAtColumn.setCellValueFactory(new PropertyValueFactory<>("createdAt"));
     }
+
+    private void setupCommunityTable() {
+        userIdColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleLongProperty(data.getValue().getId()).asObject());
+        userUsernameColumn.setCellValueFactory(data -> new javafx.beans.property.SimpleStringProperty(data.getValue().getUsername()));
+    }
+
 
     private void loadDucks() {
         try {
@@ -183,6 +206,24 @@ public class MainController implements Initializable {
             showAlert("Database Error", "Failed to load friendships: " + e.getMessage());
         }
     }
+
+    private void loadCommunities() {
+        int total = friendshipService.getTotalCommunities();
+        totalCommunitiesLabel.setText("Total communities: " + total);
+
+        List<Long> userIds = friendshipService.getMostSocialCommunityWithMembers();
+
+        List<User> users = userIds.stream().map(id -> {
+            User u = personService.getPerson(id);
+            if (u != null) return u;
+            return duckService.getDucks().stream().filter(d -> d.getId() == id).findFirst().orElse(null);
+        }).filter(u -> u != null).toList();
+
+        mostSocialCommunityLabel.setText("Most social community: " + users.size() + " users");
+
+        communityTable.setItems(FXCollections.observableArrayList(users));
+    }
+
 
     @FXML
     private void handleDuckPrevious() {
@@ -549,4 +590,71 @@ public class MainController implements Initializable {
             loadFriendships();
         }
     }
+
+    @FXML
+    private void openLoginWindow() {
+        Stage loginStage = new Stage();
+        loginStage.setTitle("Log In");
+
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20));
+
+        Label emailLabel = new Label("Email:");
+        TextField emailField = new TextField();
+        Label passwordLabel = new Label("Password:");
+        PasswordField passwordField = new PasswordField();
+
+        Button submitButton = new Button("Submit");
+        submitButton.setOnAction(e -> {
+            String email = emailField.getText();
+            String password = passwordField.getText();
+            System.out.println("Logging in with: " + email + " / " + password);
+            loginStage.close(); // Close after submit (replace with actual login logic)
+        });
+
+        grid.add(emailLabel, 0, 0);
+        grid.add(emailField, 1, 0);
+        grid.add(passwordLabel, 0, 1);
+        grid.add(passwordField, 1, 1);
+        grid.add(submitButton, 1, 2);
+
+        Scene scene = new Scene(grid, 300, 200);
+        loginStage.setScene(scene);
+        loginStage.show();
+
+        submitButton.setOnAction(event -> {
+            handleLogin(emailField.getText(), passwordField.getText()); // update main window label
+            loginStage.close(); // close login window
+        });
+
+    }
+
+    @FXML
+    private void handleLogin(String email, String password) {
+        // Check DuckService first
+        Duck loggedDuck = duckService.getDucks().stream()
+                .filter(d -> d.getEmail().equals(email) && d.getPassword().equals(password))
+                .findFirst().orElse(null);
+
+        if (loggedDuck != null) {
+            loginStatusLabel.setText("Logged in as Duck: " + loggedDuck.getUsername());
+            return;
+        }
+
+        // Check PersonService
+        Person loggedPerson = personService.getPersons().stream()
+                .filter(p -> p.getEmail().equals(email) && p.getPassword().equals(password))
+                .findFirst().orElse(null);
+
+        if (loggedPerson != null) {
+            loginStatusLabel.setText("Logged in as Person: " + loggedPerson.getUsername());
+            return;
+        }
+
+        // Login failed
+        loginStatusLabel.setText("Login failed");
+    }
+
 }
