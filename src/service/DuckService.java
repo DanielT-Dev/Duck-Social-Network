@@ -3,6 +3,7 @@ package service;
 import domain.Duck;
 import repository.DuckRepository;
 import repository.MemoryRepository;
+import util.SecurityUtils;
 import validator.DuckValidator;
 
 import java.sql.SQLException;
@@ -21,6 +22,8 @@ public class DuckService {
         }
 
         try {
+            String hashedPassword = SecurityUtils.hashPassword(duck.getPassword());
+            duck.setPassword(hashedPassword);
             duckRepository.save(duck);
             System.out.println("Duck added successfully!");
         } catch (SQLException e) {

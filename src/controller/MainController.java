@@ -31,6 +31,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.Button;
+import util.SecurityUtils;
 
 public class MainController implements Initializable {
 
@@ -347,13 +348,9 @@ public class MainController implements Initializable {
 
         Optional<Duck> result = dialog.showAndWait();
         result.ifPresent(duck -> {
-            try {
-                // Save duck to database
-                duckRepository.save(duck);
-                loadDucks();
-            } catch (SQLException e) {
-                showAlert("Database Error", "Failed to create duck: " + e.getMessage());
-            }
+            // Save duck to database
+            duckService.addDuck(duck);
+            loadDucks();
         });
     }
 
@@ -435,12 +432,8 @@ public class MainController implements Initializable {
 
         Optional<Person> result = dialog.showAndWait();
         result.ifPresent(person -> {
-            try {
-                personRepository.save(person);
-                loadPersons();
-            } catch (SQLException e) {
-                showAlert("Database Error", "Failed to create person: " + e.getMessage());
-            }
+            personService.addPerson(person);
+            loadPersons();
         });
     }
 
@@ -641,9 +634,12 @@ public class MainController implements Initializable {
 
     @FXML
     private void handleLogin(String email, String password) {
+        String hashedInput = SecurityUtils.hashPassword(password.trim());
+        String emailTrimmed = email.trim();
+
         // Check DuckService first
         Duck loggedDuck = duckService.getDucks().stream()
-                .filter(d -> d.getEmail().equals(email) && d.getPassword().equals(password))
+                .filter(d -> d.getEmail().equals(emailTrimmed) && d.getPassword().equals(hashedInput))
                 .findFirst().orElse(null);
 
         if (loggedDuck != null) {
@@ -654,10 +650,17 @@ public class MainController implements Initializable {
 
         // Check PersonService
         Person loggedPerson = personService.getPersons().stream()
-                .filter(p -> p.getEmail().equals(email) && p.getPassword().equals(password))
+                .filter(p -> p.getEmail().equals(emailTrimmed) && p.getPassword().equals(hashedInput))
                 .findFirst().orElse(null);
 
+        personService.getPersons().forEach(p ->
+                System.out.println(p.getUsername() + " : " + p.getPassword())
+        );
+        System.out.println("Input hash: " + hashedInput);
+
+
         if (loggedPerson != null) {
+
             loginStatusLabel.setText("Logged in as Person: " + loggedPerson.getUsername());
             setLoggedInUserId(loggedPerson.getId());
             return;
@@ -665,8 +668,9 @@ public class MainController implements Initializable {
 
         // Login failed
         loginStatusLabel.setText("Login failed");
-        setLoggedInUserId(-1); // ensure no user is considered logged in
+        setLoggedInUserId(-1); // no user logged in
     }
+
 
     @FXML
     public void openMessagesWindow() {
@@ -684,7 +688,7 @@ public class MainController implements Initializable {
             controller.setCurrentUser(loggedInUserId);
 
             Stage stage = new Stage();
-            stage.setScene(new Scene(root));
+            stage.setScene(new Scene(root, 600, 500));
             stage.setTitle("Messages");
             stage.show();
         } catch (IOException e) {

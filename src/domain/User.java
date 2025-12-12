@@ -6,7 +6,7 @@ public abstract class User {
     private final long id;
     private final String username;
     private final String email;
-    private final String password;
+    private String password;
 
     public User(long id, String username, String email, String password) {
         this.id = id;
@@ -27,6 +27,10 @@ public abstract class User {
 
     public String getPassword() {
         return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 
     @Override

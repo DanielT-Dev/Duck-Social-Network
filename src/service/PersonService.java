@@ -3,12 +3,13 @@ package service;
 import domain.Person;
 import repository.MemoryRepository;
 import repository.PersonRepository;
+import util.SecurityUtils;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class PersonService {
-    private final PersonRepository personRepository =  new PersonRepository();
+    private final PersonRepository personRepository = new PersonRepository();
 
     public void addPerson(Person person) {
         try {
@@ -18,7 +19,8 @@ public class PersonService {
                 System.err.println("Error: Username '" + person.getUsername() + "' already exists");
                 return;
             }
-
+            String hashedPassword = SecurityUtils.hashPassword(person.getPassword());
+            person.setPassword(hashedPassword);
             personRepository.save(person);
             System.out.println("Person added successfully!");
         } catch (SQLException e) {
