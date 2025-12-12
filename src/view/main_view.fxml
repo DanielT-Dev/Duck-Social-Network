@@ -32,6 +32,10 @@
                             <Button text="Delete Selected" onAction="#deleteSelectedDuck"
                                     style="-fx-background-color: #ff4444; -fx-text-fill: white;"/>
                             <Button text="Refresh" onAction="#refreshCurrentTab"/>
+
+                            <!-- ComboBox for type filter -->
+                            <Label text="Filter by Type:"/>
+                            <ComboBox fx:id="duckTypeFilter" prefWidth="120"/>
                         </HBox>
                     </top>
                     <center>

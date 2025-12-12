@@ -10,17 +10,30 @@ import java.util.List;
 public class MessageRepository {
 
     public void save(Message m) throws SQLException {
-        String sql = "INSERT INTO messages (sender_id, receiver_id, content, timestamp) VALUES (?, ?, ?, ?)";
+        String sql = "INSERT INTO messages (sender_id, receiver_id, content, timestamp, reply_to_id) VALUES (?, ?, ?, ?, ?)";
 
         try (Connection conn = DatabaseConnection.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+             PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
 
             stmt.setLong(1, m.getSenderId());
             stmt.setLong(2, m.getReceiverId());
             stmt.setString(3, m.getContent());
             stmt.setTimestamp(4, Timestamp.valueOf(m.getTimestamp()));
 
+            if (m.getReplyToId() != null) {
+                stmt.setLong(5, m.getReplyToId());
+            } else {
+                stmt.setNull(5, Types.BIGINT);
+            }
+
             stmt.executeUpdate();
+
+            // Retrieve generated ID
+            try (ResultSet generatedKeys = stmt.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    m.setId(generatedKeys.getLong(1));
+                }
+            }
         }
     }
 
@@ -42,15 +55,18 @@ public class MessageRepository {
             stmt.setLong(3, user2);
             stmt.setLong(4, user1);
 
-            ResultSet rs = stmt.executeQuery();
-            while (rs.next()) {
-                messages.add(new Message(
-                        rs.getLong("id"),
-                        rs.getLong("sender_id"),
-                        rs.getLong("receiver_id"),
-                        rs.getString("content"),
-                        rs.getTimestamp("timestamp").toLocalDateTime()
-                ));
+            try (ResultSet rs = stmt.executeQuery()) {
+                while (rs.next()) {
+                    Long replyTo = rs.getObject("reply_to_id") != null ? rs.getLong("reply_to_id") : null;
+                    messages.add(new Message(
+                            rs.getLong("id"),
+                            rs.getLong("sender_id"),
+                            rs.getLong("receiver_id"),
+                            rs.getString("content"),
+                            rs.getTimestamp("timestamp").toLocalDateTime(),
+                            replyTo
+                    ));
+                }
             }
         }
 

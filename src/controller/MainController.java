@@ -95,7 +95,9 @@ public class MainController implements Initializable {
     private Label loginStatusLabel;
     private long loggedInUserId = -1; // -1 means not logged in
 
-    @Override
+    @FXML private ComboBox<String> duckTypeFilter;
+
+    @FXML
     public void initialize(URL location, ResourceBundle resources) {
         duckRepository = new DuckRepository();
         personRepository = new PersonRepository();
@@ -105,6 +107,16 @@ public class MainController implements Initializable {
         setupPersonTable();
         setupFriendshipTable();
         setupCommunityTable();
+
+        // Initialize duck type filter
+        duckTypeFilter.getItems().addAll(
+                "All",
+                "FLYING",
+                "SWIMMING",
+                "SWIMMING_AND_FLYING"
+        );
+        duckTypeFilter.setValue("All");
+        duckTypeFilter.setOnAction(ev -> applyDuckFilter());
 
         loadDucks();
         loadPersons();
@@ -122,6 +134,18 @@ public class MainController implements Initializable {
                 loadCommunities();
             }
         });
+    }
+
+    private void applyDuckFilter() {
+        String selectedType = duckTypeFilter.getValue();
+        if (selectedType == null || selectedType.equals("All")) {
+            loadDucks(); // show all ducks
+        } else {
+            List<Duck> filtered = duckService.getDucks().stream()
+                    .filter(d -> d.getTip().name().equals(selectedType))
+                    .toList();
+            duckTable.setItems(FXCollections.observableArrayList(filtered));
+        }
     }
 
     private void setupDuckTable() {
