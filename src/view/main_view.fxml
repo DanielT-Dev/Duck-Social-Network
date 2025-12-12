@@ -13,6 +13,7 @@
             </padding>
             <Button text="Log In" onAction="#openLoginWindow"/>
             <Label fx:id="loginStatusLabel" text="Not logged in"/>
+            <Button text="Messages" onAction="#openMessagesWindow"/>
         </HBox>
     </top>
 

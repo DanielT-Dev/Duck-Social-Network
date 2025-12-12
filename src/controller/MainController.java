@@ -4,12 +4,16 @@ import domain.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import repository.DuckRepository;
 import repository.FriendshipRepository;
 import repository.PersonRepository;
+
+import java.io.IOException;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.List;
@@ -86,9 +90,9 @@ public class MainController implements Initializable {
     @FXML private TableColumn<User, Long> userIdColumn;
     @FXML private TableColumn<User, String> userUsernameColumn;
 
-
     @FXML
     private Label loginStatusLabel;
+    private long loggedInUserId = -1; // -1 means not logged in
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -631,6 +635,10 @@ public class MainController implements Initializable {
 
     }
 
+    public void setLoggedInUserId(long userId) {
+        this.loggedInUserId = userId;
+    }
+
     @FXML
     private void handleLogin(String email, String password) {
         // Check DuckService first
@@ -640,6 +648,7 @@ public class MainController implements Initializable {
 
         if (loggedDuck != null) {
             loginStatusLabel.setText("Logged in as Duck: " + loggedDuck.getUsername());
+            setLoggedInUserId(loggedDuck.getId());
             return;
         }
 
@@ -650,11 +659,37 @@ public class MainController implements Initializable {
 
         if (loggedPerson != null) {
             loginStatusLabel.setText("Logged in as Person: " + loggedPerson.getUsername());
+            setLoggedInUserId(loggedPerson.getId());
             return;
         }
 
         // Login failed
         loginStatusLabel.setText("Login failed");
+        setLoggedInUserId(-1); // ensure no user is considered logged in
+    }
+
+    @FXML
+    public void openMessagesWindow() {
+        if (loggedInUserId == -1) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "You must be logged in to view messages!");
+            alert.show();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/messages_view.fxml"));
+            Parent root = loader.load();
+
+            MessagesController controller = loader.getController();
+            controller.setCurrentUser(loggedInUserId);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root));
+            stage.setTitle("Messages");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 }
