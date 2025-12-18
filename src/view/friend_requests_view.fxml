@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.geometry.Insets?>
+
+<VBox xmlns="http://javafx.com/javafx/21.0.0"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="controller.FriendRequestsController"
+      spacing="10">
+
+    <padding>
+        <Insets top="10" right="10" bottom="10" left="10"/>
+    </padding>
+
+    <!-- Top bar -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <Label text="Pending Friend Requests"/>
+        <ImageView fx:id="bellIcon" fitWidth="16" fitHeight="16" visible="false"/>
+    </HBox>
+
+    <!-- Send request -->
+    <HBox spacing="10" alignment="CENTER_LEFT">
+        <TextField fx:id="usernameField" promptText="Enter username"/>
+        <Button fx:id="sendRequestButton" text="Send Request"/>
+        <Button text="Refresh" onAction="#refreshRequests"/>
+    </HBox>
+
+    <!-- Requests table -->
+    <TableView fx:id="table" VBox.vgrow="ALWAYS">
+        <columns>
+            <TableColumn fx:id="fromCol" text="From" prefWidth="200"/>
+            <TableColumn fx:id="actionsCol" text="Actions" prefWidth="200"/>
+        </columns>
+    </TableView>
+
+</VBox>

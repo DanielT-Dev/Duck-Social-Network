@@ -652,6 +652,31 @@ public class MainController implements Initializable {
 
     }
 
+    @FXML
+    public void openFriendRequestsWindow() {
+        if (loggedInUserId == -1) {
+            Alert alert = new Alert(Alert.AlertType.WARNING, "You must be logged in to view friend requests!");
+            alert.show();
+            return;
+        }
+
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/view/friend_requests_view.fxml"));
+            Parent root = loader.load();
+
+            FriendRequestsController controller = loader.getController();
+            controller.setCurrentUser(loggedInUserId);
+
+            Stage stage = new Stage();
+            stage.setScene(new Scene(root, 500, 400));
+            stage.setTitle("Friend Requests");
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+
     public void setLoggedInUserId(long userId) {
         this.loggedInUserId = userId;
     }

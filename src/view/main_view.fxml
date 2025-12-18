@@ -14,6 +14,7 @@
             <Button text="Log In" onAction="#openLoginWindow"/>
             <Label fx:id="loginStatusLabel" text="Not logged in"/>
             <Button text="Messages" onAction="#openMessagesWindow"/>
+            <Button text="Friend Requests" onAction="#openFriendRequestsWindow"/>
         </HBox>
     </top>
 
