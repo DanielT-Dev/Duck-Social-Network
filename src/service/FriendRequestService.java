@@ -99,4 +99,8 @@ public class FriendRequestService {
             return 0;
         }
     }
+
+    public boolean hasPendingRequests(long userId) {
+        return !getPendingRequestsForUser(userId).isEmpty();
+    }
 }

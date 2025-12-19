@@ -9,6 +9,8 @@ import javafx.fxml.Initializable;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import repository.DuckRepository;
 import repository.FriendshipRepository;
 import repository.PersonRepository;
@@ -21,10 +23,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import javafx.scene.layout.GridPane;
 import javafx.geometry.Insets;
-import service.DuckService;
-import service.FriendshipService;
-import service.LoginService;
-import service.PersonService;
+import service.*;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
 import javafx.scene.control.Label;
@@ -78,6 +77,7 @@ public class MainController implements Initializable {
     private final PersonService personService = new PersonService();
     private final FriendshipService friendshipService = new FriendshipService();
     private final LoginService loginService = new LoginService(duckService, personService);
+    private final FriendRequestService friendRequestService = new FriendRequestService();
 
     private int duckPage = 1;
     private int personPage = 1;
@@ -134,6 +134,14 @@ public class MainController implements Initializable {
                 loadCommunities();
             }
         });
+
+        var is = getClass().getResourceAsStream("/images/bell.png");
+        if (is != null) {
+            bellIcon.setImage(new Image(is));
+        } else {
+            System.err.println("bell.png not found on classpath");
+            bellIcon.setVisible(false);
+        }
     }
 
     private void applyDuckFilter() {
@@ -670,6 +678,9 @@ public class MainController implements Initializable {
             Stage stage = new Stage();
             stage.setScene(new Scene(root, 500, 400));
             stage.setTitle("Friend Requests");
+
+            stage.setOnHidden(e -> refreshBell());
+
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();
@@ -679,6 +690,13 @@ public class MainController implements Initializable {
 
     public void setLoggedInUserId(long userId) {
         this.loggedInUserId = userId;
+        refreshBell();
+    }
+
+    public void refreshBell() {
+        boolean hasRequests =
+                friendRequestService.hasPendingRequests(this.loggedInUserId);
+        bellIcon.setVisible(hasRequests);
     }
 
     @FXML
@@ -744,5 +762,8 @@ public class MainController implements Initializable {
             e.printStackTrace();
         }
     }
+
+    @FXML private ImageView bellIcon;
+
 
 }

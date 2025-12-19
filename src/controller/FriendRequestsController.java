@@ -22,7 +22,6 @@ public class FriendRequestsController {
 
     @FXML private TextField usernameField;
     @FXML private Button sendRequestButton;
-    @FXML private ImageView bellIcon;
 
     @FXML private TableView<FriendRequest> table;
     @FXML private TableColumn<FriendRequest, String> fromCol;
@@ -41,10 +40,6 @@ public class FriendRequestsController {
 
     @FXML
     public void initialize() {
-        var is = getClass().getResourceAsStream("/images/bell.png");
-        if (is != null) bellIcon.setImage(new Image(is));
-        else bellIcon.setVisible(false);
-
         sendRequestButton.setOnAction(e -> sendFriendRequest());
 
         fromCol.setCellValueFactory(c ->
@@ -116,7 +111,6 @@ public class FriendRequestsController {
                 friendRequestService.getPendingRequestsForUser(currentUserId);
 
         table.setItems(FXCollections.observableArrayList(requests));
-        bellIcon.setVisible(!requests.isEmpty());
     }
 
     private String getUsernameById(long userId) {
