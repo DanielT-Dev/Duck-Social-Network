@@ -4,18 +4,15 @@ import domain.Duck;
 import domain.Person;
 import domain.FriendRequest;
 import javafx.beans.property.SimpleStringProperty;
-import javafx.collections.FXCollections;
+import javafx.collections.ListChangeListener;
 import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import service.DuckService;
 import service.PersonService;
 import service.FriendRequestService;
 
-import java.util.List;
 import java.util.Optional;
 
 public class FriendRequestsController {
@@ -35,12 +32,15 @@ public class FriendRequestsController {
 
     public void setCurrentUser(long userId) {
         this.currentUserId = userId;
-        refreshRequests();
+        friendRequestService.refreshPendingRequests(currentUserId);
     }
 
     @FXML
     public void initialize() {
         sendRequestButton.setOnAction(e -> sendFriendRequest());
+
+        // Bind TableView to observable list
+        table.setItems(friendRequestService.getPendingRequestsObservable());
 
         fromCol.setCellValueFactory(c ->
                 new SimpleStringProperty(getUsernameById(c.getValue().getSenderId()))
@@ -65,7 +65,6 @@ public class FriendRequestsController {
                         fr.getReceiverId(),
                         status
                 );
-                refreshRequests();
             }
 
             @Override
@@ -73,6 +72,12 @@ public class FriendRequestsController {
                 super.updateItem(item, empty);
                 setGraphic(empty ? null : box);
             }
+        });
+
+        // Optional: listen for changes to update other UI elements
+        friendRequestService.getPendingRequestsObservable().addListener((ListChangeListener<FriendRequest>) change -> {
+            // Example: update badge count
+            // badgeLabel.setText(String.valueOf(friendRequestService.getPendingRequestsObservable().size()));
         });
     }
 
@@ -100,17 +105,25 @@ public class FriendRequestsController {
             return;
         }
 
-        friendRequestService.sendRequest(currentUserId, receiverId.get());
+        long receiver = receiverId.get();
+
+        try {
+            if (friendRequestService.friendshipService.areFriends(currentUserId, receiver)) {
+                showAlert("Friendship Exists", "You are already friends with " + username);
+                return;
+            }
+        } catch (Exception e) {
+            showAlert("Error", "Could not check friendship: " + e.getMessage());
+            return;
+        }
+
+        if (friendRequestService.requestExists(currentUserId, receiver)) {
+            showAlert("Request Exists", "You have already sent a friend request to " + username);
+            return;
+        }
+
+        friendRequestService.sendRequest(currentUserId, receiver);
         usernameField.clear();
-        refreshRequests();
-    }
-
-    @FXML
-    public void refreshRequests() {
-        List<FriendRequest> requests =
-                friendRequestService.getPendingRequestsForUser(currentUserId);
-
-        table.setItems(FXCollections.observableArrayList(requests));
     }
 
     private String getUsernameById(long userId) {

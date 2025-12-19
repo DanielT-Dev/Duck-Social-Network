@@ -2,13 +2,22 @@ package service;
 
 import domain.FriendRequest;
 import repository.FriendRequestRepository;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository = new FriendRequestRepository();
-    private final FriendshipService friendshipService = new FriendshipService();
+    public final FriendshipService friendshipService = new FriendshipService();
+
+    // Observable list for UI updates
+    private final ObservableList<FriendRequest> pendingRequests = FXCollections.observableArrayList();
+
+    public ObservableList<FriendRequest> getPendingRequestsObservable() {
+        return pendingRequests;
+    }
 
     public void sendRequest(long senderId, long receiverId) {
         if (senderId == receiverId) {
@@ -17,12 +26,19 @@ public class FriendRequestService {
         }
 
         try {
+            if (friendshipService.areFriends(senderId, receiverId)) {
+                System.err.println("Error: Users are already friends");
+                return;
+            }
+
             if (friendRequestRepository.exists(senderId, receiverId)) {
                 System.err.println("Error: Request already exists");
                 return;
             }
 
-            friendRequestRepository.save(new FriendRequest(senderId, receiverId));
+            FriendRequest fr = new FriendRequest(senderId, receiverId);
+            friendRequestRepository.save(fr);
+            pendingRequests.add(fr); // Notify observers
             System.out.println("Friend request sent successfully!");
         } catch (SQLException e) {
             System.err.println("Error sending friend request: " + e.getMessage());
@@ -32,6 +48,7 @@ public class FriendRequestService {
     public void cancelRequest(long senderId, long receiverId) {
         try {
             friendRequestRepository.delete(senderId, receiverId);
+            pendingRequests.removeIf(fr -> fr.getSenderId() == senderId && fr.getReceiverId() == receiverId);
             System.out.println("Friend request cancelled successfully!");
         } catch (SQLException e) {
             System.err.println("Error cancelling friend request: " + e.getMessage());
@@ -52,6 +69,7 @@ public class FriendRequestService {
 
             // Always delete the request
             friendRequestRepository.delete(senderId, receiverId);
+            pendingRequests.removeIf(fr -> fr.getSenderId() == senderId && fr.getReceiverId() == receiverId);
 
             // Only create friendship if accepted
             if (status.equalsIgnoreCase("accepted")) {
@@ -64,21 +82,12 @@ public class FriendRequestService {
         }
     }
 
-    public List<FriendRequest> getAllRequests() {
+    public void refreshPendingRequests(long userId) {
         try {
-            return friendRequestRepository.findAll();
+            List<FriendRequest> requests = friendRequestRepository.findPendingForUser(userId);
+            pendingRequests.setAll(requests); // Notify observers
         } catch (SQLException e) {
-            System.err.println("Error getting friend requests: " + e.getMessage());
-            return List.of();
-        }
-    }
-
-    public List<FriendRequest> getPendingRequestsForUser(long userId) {
-        try {
-            return friendRequestRepository.findPendingForUser(userId);
-        } catch (SQLException e) {
-            System.err.println("Error getting pending requests: " + e.getMessage());
-            return List.of();
+            System.err.println("Error refreshing pending requests: " + e.getMessage());
         }
     }
 
@@ -91,16 +100,7 @@ public class FriendRequestService {
         }
     }
 
-    public int getTotalRequests() {
-        try {
-            return friendRequestRepository.getTotalCount();
-        } catch (SQLException e) {
-            System.err.println("Error getting total request count: " + e.getMessage());
-            return 0;
-        }
-    }
-
     public boolean hasPendingRequests(long userId) {
-        return !getPendingRequestsForUser(userId).isEmpty();
+        return !pendingRequests.isEmpty();
     }
 }
