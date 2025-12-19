@@ -1,19 +1,30 @@
 package service;
 
 import domain.FriendRequest;
+import repository.DuckRepository;
 import repository.FriendRequestRepository;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import repository.PersonRepository;
 
 import java.sql.SQLException;
 import java.util.List;
 
 public class FriendRequestService {
-    private final FriendRequestRepository friendRequestRepository = new FriendRequestRepository();
-    public final FriendshipService friendshipService = new FriendshipService();
+    private final DuckRepository duckRepository;
+    private final PersonRepository personRepository;
+    private final FriendRequestRepository friendRequestRepository;
+    public final FriendshipService friendshipService;
 
     // Observable list for UI updates
     private final ObservableList<FriendRequest> pendingRequests = FXCollections.observableArrayList();
+
+    public FriendRequestService(DuckRepository duckRepository, PersonRepository personRepository, FriendRequestRepository friendRequestRepository, FriendshipService friendshipService) {
+        this.duckRepository = duckRepository;
+        this.personRepository = personRepository;
+        this.friendRequestRepository = friendRequestRepository;
+        this.friendshipService = friendshipService;
+    }
 
     public ObservableList<FriendRequest> getPendingRequestsObservable() {
         return pendingRequests;

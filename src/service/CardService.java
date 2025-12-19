@@ -13,9 +13,9 @@ public class CardService {
     private final CardRepository cardRepository;
     private final DuckRepository duckRepository;
 
-    public CardService(MemoryRepository memoryRepository) {
-        this.cardRepository = new CardRepository();
-        this.duckRepository = new DuckRepository();
+    public CardService(CardRepository cardRepository, DuckRepository duckRepository) {
+        this.cardRepository = cardRepository;
+        this.duckRepository = duckRepository;
     }
 
     public void addCard(Card card) {

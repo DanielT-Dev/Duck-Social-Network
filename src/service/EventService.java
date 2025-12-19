@@ -9,12 +9,8 @@ import java.util.List;
 public class EventService {
     private EventRepository eventRepository;
 
-    public EventService() {
-        this.eventRepository = new EventRepository();
-    }
-
     public EventService(EventRepository eventRepository) {
-        this.eventRepository = eventRepository;
+        this.eventRepository =  eventRepository;
     }
 
     /**

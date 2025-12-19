@@ -12,6 +12,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import repository.DuckRepository;
+import repository.FriendRequestRepository;
 import repository.FriendshipRepository;
 import repository.PersonRepository;
 
@@ -70,14 +71,16 @@ public class MainController implements Initializable {
 
     @FXML private TabPane tabPane;
 
-    private DuckRepository duckRepository;
-    private PersonRepository personRepository;
-    private FriendshipRepository friendshipRepository;
-    private final DuckService duckService = new DuckService();
-    private final PersonService personService = new PersonService();
-    private final FriendshipService friendshipService = new FriendshipService();
+    private DuckRepository duckRepository = new DuckRepository();
+    private PersonRepository personRepository = new PersonRepository();
+    private FriendshipRepository friendshipRepository = new FriendshipRepository();
+    private final FriendRequestRepository friendRequestRepository = new FriendRequestRepository();
+
+    private final DuckService duckService = new DuckService(duckRepository);
+    private final PersonService personService = new PersonService(personRepository);
+    private final FriendshipService friendshipService = new FriendshipService(friendshipRepository);
     private final LoginService loginService = new LoginService(duckService, personService);
-    private final FriendRequestService friendRequestService = new FriendRequestService();
+    private final FriendRequestService friendRequestService = new FriendRequestService(duckRepository, personRepository, friendRequestRepository, friendshipService);
 
     private int duckPage = 1;
     private int personPage = 1;

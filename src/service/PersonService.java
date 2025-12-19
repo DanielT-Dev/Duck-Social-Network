@@ -9,7 +9,11 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class PersonService {
-    private final PersonRepository personRepository = new PersonRepository();
+    private final PersonRepository personRepository;
+
+    public PersonService(PersonRepository personRepository) {
+        this.personRepository = personRepository;
+    }
 
     public void addPerson(Person person) {
         try {

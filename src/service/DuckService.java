@@ -11,8 +11,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DuckService {
-    private final DuckRepository duckRepository = new DuckRepository();
+    private final DuckRepository duckRepository;
 
+    public DuckService(DuckRepository duckRepository) {
+        this.duckRepository = duckRepository;
+    }
 
     public void addDuck(Duck duck) {
         try {

@@ -7,6 +7,9 @@ import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import repository.DuckRepository;
+import repository.MessageRepository;
+import repository.PersonRepository;
 import service.DuckService;
 import service.MessageService;
 import service.PersonService;
@@ -24,9 +27,13 @@ public class MessagesController {
     @FXML private TextField messageField;
     @FXML private Label replyingLabel; // NEW: shows "replying to ..."
 
-    private final MessageService messageService = new MessageService();
-    private final DuckService duckService = new DuckService();
-    private final PersonService personService = new PersonService();
+    private final DuckRepository duckRepository = new DuckRepository();
+    private final MessageRepository messageRepository = new MessageRepository();
+    private final PersonRepository personRepository = new PersonRepository();
+
+    private final MessageService messageService = new MessageService(messageRepository);
+    private final DuckService duckService = new DuckService(duckRepository);
+    private final PersonService personService = new PersonService(personRepository);
 
     private long currentUser = 1;
     private long selectedUser = -1;

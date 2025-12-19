@@ -9,7 +9,12 @@ import javafx.fxml.FXML;
 import javafx.geometry.Pos;
 import javafx.scene.control.*;
 import javafx.scene.layout.HBox;
+import repository.DuckRepository;
+import repository.FriendRequestRepository;
+import repository.FriendshipRepository;
+import repository.PersonRepository;
 import service.DuckService;
+import service.FriendshipService;
 import service.PersonService;
 import service.FriendRequestService;
 
@@ -26,9 +31,15 @@ public class FriendRequestsController {
 
     private long currentUserId;
 
-    private final FriendRequestService friendRequestService = new FriendRequestService();
-    private final PersonService personService = new PersonService();
-    private final DuckService duckService = new DuckService();
+    private final DuckRepository duckRepository = new DuckRepository();
+    private final FriendshipRepository friendshipRepository = new FriendshipRepository();
+    private final FriendRequestRepository friendRequestRepository = new FriendRequestRepository();
+    private final PersonRepository personRepository = new PersonRepository();
+
+    private final FriendshipService friendshipService = new FriendshipService(friendshipRepository);
+    private final FriendRequestService friendRequestService = new FriendRequestService(duckRepository, personRepository, friendRequestRepository, friendshipService);
+    private final PersonService personService = new PersonService(personRepository);
+    private final DuckService duckService = new DuckService(duckRepository);
 
     public void setCurrentUser(long userId) {
         this.currentUserId = userId;

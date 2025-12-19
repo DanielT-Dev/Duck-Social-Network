@@ -1,8 +1,7 @@
 package controller;
 
 import domain.*;
-import repository.FriendshipRepository;
-import repository.MemoryRepository;
+import repository.*;
 import service.*;
 
 import java.sql.SQLException;
@@ -15,12 +14,18 @@ public class ConsoleMenu {
 
     public static final ConsoleMenu INSTANCE = new ConsoleMenu();
 
+    private final CardRepository cardRepository = new CardRepository();
+    private final DuckRepository duckRepository = new DuckRepository();
+    private final EventRepository eventRepository = new EventRepository();
+    private final FriendshipRepository friendshipRepository = new FriendshipRepository();
+    private final PersonRepository personRepository = new PersonRepository();
+
     private final MemoryRepository memoryRepository = new MemoryRepository();
-    private final DuckService duckService = new DuckService();
-    private final PersonService personService = new PersonService();
-    private final FriendshipService friendshipService = new FriendshipService();
-    private final CardService cardService = new CardService(memoryRepository);
-    private final EventService eventService = new EventService();
+    private final DuckService duckService = new DuckService(duckRepository);
+    private final PersonService personService = new PersonService(personRepository);
+    private final FriendshipService friendshipService = new FriendshipService(friendshipRepository);
+    private final CardService cardService = new CardService(cardRepository, duckRepository);
+    private final EventService eventService = new EventService(eventRepository);
 
     private final Scanner scanner = new Scanner(System.in);
 

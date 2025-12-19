@@ -9,7 +9,11 @@ import java.util.List;
 
 public class MessageService {
 
-    private final MessageRepository repo = new MessageRepository();
+    private final MessageRepository repo;
+
+    public MessageService(MessageRepository repo) {
+        this.repo = repo;
+    }
 
     // Send message without reply
     public void sendMessage(long from, long to, String content) {
